@@ -3,13 +3,17 @@ import App from './App.tsx'
 import { AuthProvider } from "react-oidc-context";
 import 'normalize.css';
 import './index.css'
-import config from './config.ts';
+import { Configuration } from './config.ts';
+
+declare global {
+  interface Window { config: Configuration }
+}
 
 const oidcConfig = {
-  authority: config.oidcAuthorityUrl,
-  client_id: config.oidcClientId,
-  redirect_uri: config.oidcRedirectUrl,
-  scope: config.oidcScope
+  authority: window.config.oidcAuthorityUrl,
+  client_id: window.config.oidcClientId,
+  redirect_uri: window.config.oidcRedirectUrl,
+  scope: window.config.oidcScope
 };
 
 console.log(oidcConfig)

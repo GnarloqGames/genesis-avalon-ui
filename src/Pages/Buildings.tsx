@@ -7,7 +7,6 @@ import CardContent from '@mui/material/CardContent';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import React from "react";
-import config from "../config";
 
 import axios, { AxiosResponse } from "axios";
 
@@ -68,7 +67,7 @@ const postBuild = async (auth: AuthContextProps, kind: string) => {
     const accessToken = auth.user.access_token;
 
     const response = await axios
-        .post(`${config.apiBaseUrl}/build`,
+        .post(`${window.config.apiBaseUrl}/build`,
             {
                 kind: kind
             },
