@@ -12,7 +12,7 @@ declare global {
 const oidcConfig = {
   authority: window.config.oidcAuthorityUrl,
   client_id: window.config.oidcClientId,
-  redirect_uri: window.config.oidcRedirectUrl,
+  redirect_uri: window.config.oidcRedirectUrl || window.location.href,
   scope: window.config.oidcScope
 };
 
