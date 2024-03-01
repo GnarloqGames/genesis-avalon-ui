@@ -6,4 +6,5 @@ RUN yarn && yarn build
 
 FROM caddy:2.6-alpine
 
+COPY Caddyfile /etc/caddy/Caddyfile
 COPY --from=builder /build/dist/ /usr/share/caddy
