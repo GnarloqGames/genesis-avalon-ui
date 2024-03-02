@@ -117,7 +117,7 @@ const useFetch = (url: string, auth: AuthContextProps) => {
 const Buildings = () => {
     const auth = useAuth();
 
-    const buildings = useFetch("http://localhost:8080/buildings", auth)
+    const buildings = useFetch(`${window.config.apiBaseUrl}/buildings`, auth)
 
     if (buildings.buildings === null || buildings.buildings === undefined || buildings.count == 0) {
         return (
