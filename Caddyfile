@@ -3,4 +3,9 @@
 	encode gzip
 	file_server
 	root * /usr/share/caddy
+
+	log {
+		output stdout
+		format json
+	}
 }
