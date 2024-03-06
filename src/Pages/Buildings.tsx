@@ -9,53 +9,12 @@ import Typography from '@mui/material/Typography';
 import React from "react";
 
 import axios, { AxiosResponse } from "axios";
+import { Blueprint, BuildingInventory, BuildingRegistry, IBuildingProps, IBuildings } from "../Types/Buildings";
 
-interface IBuilding {
-    id: string,
-    name: string,
-    status: string,
-    owner: string,
-}
-
-interface IBuildings {
-    count: number,
-    buildings: IBuilding[]
-}
-
-interface IBuildingProps {
-    building: GroupedBuilding
-}
-
-class GroupedBuilding {
-    id = ""
-    name = ""
-    unfinished = 0
-    failed = 0
-    done = 0
-
-    constructor(id: string, name: string) {
-        this.id = id
-        this.name = name;
-    }
-
-    increase(status: string, amount: number) {
-        if (["pending","inprogress","failed","done","interrupted"].indexOf(status) == -1) {
-            return
-        }
-
-        switch (status) {
-            case "interrupted":
-            case "pending":
-            case "inprogress":
-                this.unfinished += amount
-                break
-            case "failed":
-                this.failed += amount
-                break;
-            case "done":
-                this.done += amount
-                break;
-        }
+const registry: BuildingRegistry = {
+    blueprints: {
+        "house": new Blueprint("house"),
+        "warehouse": new Blueprint("warehouse"),
     }
 }
 
@@ -77,7 +36,6 @@ const postBuild = async (auth: AuthContextProps, kind: string) => {
                 }
             }
         )
-
 
     console.log(response)
 }
@@ -104,7 +62,7 @@ const useFetch = (url: string, auth: AuthContextProps) => {
             })
         }
 
-        const id = setInterval(getBuildings, 5000);
+        const id = setInterval(getBuildings, 30000);
         getBuildings();
 
         return () => clearInterval(id);
@@ -119,33 +77,24 @@ const Buildings = () => {
 
     const buildings = useFetch(`${window.config.apiBaseUrl}/buildings`, auth)
 
-    if (buildings.buildings === null || buildings.buildings === undefined || buildings.count == 0) {
-        return (
-            <div>No buildings</div>
-        )
+    const inventory: BuildingInventory = {}
+
+    for (const prop in registry.blueprints) {
+        const name = registry.blueprints[prop].name
+        inventory[name] = []
     }
 
-    const groupedBuildings: GroupedBuilding[] = [];
-    buildings.buildings.map((item: IBuilding) => {
-        let found = false;
-        groupedBuildings.forEach((groupedItem: GroupedBuilding) => {
-            if (item.name == groupedItem.name) {
-                found = true
-                groupedItem.increase(item.status, 1)
-            }
-        })
-        if (!found) {
-            const b = new GroupedBuilding(item.id, item.name)
-            b.increase(item.status, 1)
-            groupedBuildings.push(b);
-        }
-    })
+    if (buildings.count > 0) {
+        buildings.buildings.forEach((item) => {
+            inventory[item.name].push(item)
+        });
+    }
 
     return (
         <div className="buildingList">
-            {groupedBuildings.map((item) => {
-                return <Building key={item.id} building={item} />
-            })}
+            {Object.keys(inventory).map((el) => {
+                return <Building key={el} name={el} buildings={inventory[el]} />
+            })}            
         </div>
     )
 }
@@ -153,17 +102,34 @@ const Buildings = () => {
 const Building = (props: IBuildingProps) => {
     const auth = useAuth();
     const handleClick = () => {
-        postBuild(auth, props.building.name)
+        postBuild(auth, props.name)
     }
+
+    let unfinished: number = 0;
+    let failed: number = 0;
+    let done: number = 0;
+
+    props.buildings.forEach((item) => {
+        switch (item.status) {
+            case "done":
+                done += 1;
+                break;
+            case "failed":
+                failed += 1;
+                break;
+            default:
+                unfinished += 1;
+        }
+    });
 
     const card = (
         <React.Fragment>
             <CardContent>
-                <Typography variant="h4">{props.building.name}</Typography>
+                <Typography variant="h4">{props.name}</Typography>
                 <Typography variant="body1" component="div">
                     <ul>
-                        <li><label>Unfinished: {props.building.unfinished + props.building.failed}</label></li>
-                        <li><label>Finished: {props.building.done}</label></li>
+                        <li><label>Unfinished: {unfinished + failed}</label></li>
+                        <li><label>Finished: {done}</label></li>
                     </ul>
                 </Typography>
             </CardContent>
